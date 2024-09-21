@@ -2,20 +2,20 @@
 
 import { useRouter } from "next/navigation";
 
-interface LoginButtonProps {
+interface RegisterButtonProps {
   children: React.ReactNode;
   asChild?: boolean;
   mode?: "modal" | "redirect";
 }
 
-export const LoginButton = ({
+export const RegisterButton = ({
   children,
   asChild,
   mode = "redirect",
-}: LoginButtonProps) => {
+}: RegisterButtonProps) => {
   const router = useRouter();
 
-  const onClick = () => router.push("/login");
+  const onClick = () => router.push("/register");
 
   if (mode === "modal") return <span>TODO:</span>;
 

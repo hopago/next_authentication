@@ -2,6 +2,7 @@ import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LoginButton } from "@/components/auth/login-button";
+import { RegisterButton } from "@/components/auth/register-button";
 
 const font = Poppins({
   subsets: ["latin"],
@@ -29,6 +30,13 @@ export default function Home() {
               로그인 체험하기
             </Button>
           </LoginButton>
+        </div>
+        <div className="flex justify-center">
+          <RegisterButton>
+            <Button variant="secondary" size="lg">
+              회원가입 체험하기
+            </Button>
+          </RegisterButton>
         </div>
       </div>
     </main>
