@@ -18,12 +18,23 @@ import {
 import { CardWrapper } from "../ui/card-wrapper";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+
 import { FormError } from "../form-error";
 import { FormSuccess } from "../form-success";
+
 import { login } from "@/actions/login";
+
 import { useState, useTransition } from "react";
 
+import { useSearchParams } from "next/navigation";
+
 const LoginForm = () => {
+  const searchParams = useSearchParams();
+  const urlError =
+    searchParams.get("error") === "OAuthAccountNotLinked"
+      ? "이메일이 이미 사용 중 이니 다른 방식으로 로그인 해주세요."
+      : "";
+
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -40,9 +51,9 @@ const LoginForm = () => {
     startTransition(() => {
       login(values)
         .then((res) => {
-          if (res.error) return setError(res.error);
+          if (res?.error) return setError(res?.error);
 
-          setSuccess(res.success);
+          setSuccess("로그인 성공!");
         })
         .catch((err) => {
           console.log(err);
@@ -98,7 +109,7 @@ const LoginForm = () => {
               )}
             />
           </div>
-          <FormError message={error} />
+          <FormError message={error || urlError} />
           <FormSuccess message={success} />
           <Button type="submit" className="w-full" disabled={isPending}>
             로그인
