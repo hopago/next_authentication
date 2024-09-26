@@ -53,7 +53,7 @@ const LoginForm = () => {
         .then((res) => {
           if (res?.error) return setError(res?.error);
 
-          setSuccess("로그인 성공!");
+          setSuccess(res?.success);
         })
         .catch((err) => {
           console.log(err);

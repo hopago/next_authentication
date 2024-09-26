@@ -10,6 +10,10 @@ import { db } from "@/lib/db";
 
 import { getUserByEmail } from "@/data/user/user";
 
+import { generateVerificationToken } from "@/lib/tokens";
+
+import { sendVerificationEmail } from "@/lib/mail";
+
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const validatedFields = RegisterSchema.safeParse(values);
   if (!validatedFields.success) return { error: "부적합한 제출 형식입니다." };
@@ -29,9 +33,14 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
       },
     });
 
-    // TODO: Send verification email token
+    const verificationToken = await generateVerificationToken(email);
 
-    return { success: "회원가입 성공!" };
+    await sendVerificationEmail(
+      verificationToken.email,
+      verificationToken.token
+    );
+
+    return { success: "이메일 인증 토큰 전송 완료!" };
   } catch (err) {
     console.log(err);
     return { error: "서버 오류입니다. 잠시 후 다시 시도해주세요." };
