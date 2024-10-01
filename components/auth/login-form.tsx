@@ -27,6 +27,7 @@ import { login } from "@/actions/login";
 import { useState, useTransition } from "react";
 
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 const LoginForm = () => {
   const searchParams = useSearchParams();
@@ -104,6 +105,14 @@ const LoginForm = () => {
                       disabled={isPending}
                     />
                   </FormControl>
+                  <Button
+                    size="sm"
+                    variant="link"
+                    asChild
+                    className="px-0 font-normal"
+                  >
+                    <Link href="/reset">비밀번호를 분실했나요?</Link>
+                  </Button>
                   <FormMessage />
                 </FormItem>
               )}
