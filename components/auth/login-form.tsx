@@ -36,6 +36,7 @@ const LoginForm = () => {
       ? "이메일이 이미 사용 중 이니 다른 방식으로 로그인 해주세요."
       : "";
 
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -52,9 +53,21 @@ const LoginForm = () => {
     startTransition(() => {
       login(values)
         .then((res) => {
-          if (res?.error) return setError(res?.error);
+          console.log(res);
 
-          setSuccess(res?.success);
+          if (res?.error) {
+            form.reset();
+            setError(res.error);
+          }
+
+          if (res?.twoFactor) {
+            setShowTwoFactor(true);
+          }
+
+          if (res?.success) {
+            form.reset();
+            setSuccess(res.success);
+          }
         })
         .catch((err) => {
           console.log(err);
@@ -73,55 +86,78 @@ const LoginForm = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>이메일</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="hopago@example.com"
-                      type="email"
-                      disabled={isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>비밀번호</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="*****"
-                      type="password"
-                      disabled={isPending}
-                    />
-                  </FormControl>
-                  <Button
-                    size="sm"
-                    variant="link"
-                    asChild
-                    className="px-0 font-normal"
-                  >
-                    <Link href="/reset">비밀번호를 분실했나요?</Link>
-                  </Button>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {showTwoFactor && (
+              <FormField
+                control={form.control}
+                name="twoFactorCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>2차 인증 코드</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="이메일로 전송된 2차 인증 코드를 입력해주세요."
+                        disabled={isPending}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {!showTwoFactor && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>이메일</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="hopago@example.com"
+                          type="email"
+                          disabled={isPending}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>비밀번호</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="*****"
+                          type="password"
+                          disabled={isPending}
+                        />
+                      </FormControl>
+                      <Button
+                        size="sm"
+                        variant="link"
+                        asChild
+                        className="px-0 font-normal"
+                      >
+                        <Link href="/reset">비밀번호를 분실했나요?</Link>
+                      </Button>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
           </div>
           <FormError message={error || urlError} />
           <FormSuccess message={success} />
           <Button type="submit" className="w-full" disabled={isPending}>
-            로그인
+            {showTwoFactor ? "제출하기" : "로그인"}
           </Button>
         </form>
       </Form>

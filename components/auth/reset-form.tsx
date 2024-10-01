@@ -41,8 +41,8 @@ const ResetForm = () => {
     startTransition(() => {
       reset(values)
         .then((data) => {
-          setSuccess(data?.success);
           setError(data?.error);
+          setSuccess(data?.success);
         })
         .catch((err) => setError("무언가 잘못됐군요..."));
     });

@@ -28,8 +28,15 @@ const NewVerificationForm = () => {
       ? setError("검증 토큰을 확인할 수 없습니다.")
       : completeEmailVerification(token)
           .then((data) => {
-            setSuccess(data.success);
-            setError(data.error);
+            if (data?.error) {
+              setSuccess("");
+              return setError(data.error);
+            }
+
+            if (data?.success) {
+              setError("");
+              return setSuccess(data.success);
+            }
           })
           .catch((error) => {
             // Internal Server Error

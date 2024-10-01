@@ -8,6 +8,8 @@ import authConfig from "./auth.config";
 
 import { getUserById } from "./data/user/user";
 
+import { getTwoFactorConfirmationByUserId } from "./data/auth/two-factor-confirmation";
+
 export const {
   handlers: { GET, POST },
   auth,
@@ -41,7 +43,17 @@ export const {
         // Prevent sign in without email verification
         if (!existingUser?.emailVerified) return false;
 
-        // TODO: Add 2FA Check
+        if (existingUser.isTwoFactorEnabled) {
+          const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id);
+          if (!twoFactorConfirmation) return false;
+
+          // Delete two factor confirmation for next sign in
+          await db.twoFactorConfirmation.delete({
+            where: {
+              id: twoFactorConfirmation.id,
+            }
+          });
+        }
       }
 
       return true;

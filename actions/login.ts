@@ -10,8 +10,14 @@ import { AuthError } from "next-auth";
 
 import { getUserByEmail } from "@/data/user/user";
 
-import { generateVerificationToken } from "@/lib/tokens";
-import { sendVerificationEmail } from "@/lib/mail";
+import {
+  generateVerificationToken,
+  generateTwoFactorToken,
+} from "@/lib/tokens";
+import { sendVerificationEmail, sendTwoFactorTokenEmail } from "@/lib/mail";
+import { getTwoFactorTokenByEmail } from "@/data/auth/two-factor-token";
+import { db } from "@/lib/db";
+import { getTwoFactorConfirmationByUserId } from "@/data/auth/two-factor-confirmation";
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
   const validatedFields = LoginSchema.safeParse(values);
@@ -22,7 +28,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     };
   }
 
-  const { email, password } = validatedFields.data;
+  const { email, password, twoFactorCode } = validatedFields.data;
 
   const existingUser = await getUserByEmail(email);
   if (!existingUser || !existingUser.email || !existingUser.password)
@@ -32,14 +38,57 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
       existingUser.email
     );
 
-    await sendVerificationEmail(
-      verificationToken.email,
-      verificationToken.token
-    );
+    try {
+      await sendVerificationEmail(
+        verificationToken.email,
+        verificationToken.token
+      );
 
-    return {
-      success: "이메일 인증을 위해 인증 토큰을 보내드렸어요!",
-    };
+      return {
+        success: "이메일 인증을 위해 인증 토큰을 보내드렸어요!",
+      };
+    } catch (err) {
+      return { error: "무언가 잘못됐군요..." };
+    }
+  }
+
+  if (existingUser.isTwoFactorEnabled && existingUser.email) {
+    if (twoFactorCode) {
+      const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email);
+      if (!twoFactorToken) return { error: "유효하지 않은 입력 형식입니다." };
+      if (twoFactorToken.token !== twoFactorCode)
+        return { error: "2FA 인증 코드가 일치하지 않습니다." };
+
+      const hasExpired = new Date(twoFactorToken.expires) < new Date();
+      if (hasExpired) return { error: "만료된 2FA 인증 토큰입니다." };
+
+      await db.twoFactorToken.delete({
+        where: {
+          id: twoFactorToken.id,
+        },
+      });
+
+      const existingConfirmation = await getTwoFactorConfirmationByUserId(
+        existingUser.id
+      );
+      if (existingConfirmation)
+        await db.twoFactorConfirmation.delete({
+          where: {
+            id: existingConfirmation.id,
+          },
+        });
+
+      await db.twoFactorConfirmation.create({
+        data: {
+          userId: existingUser.id,
+        },
+      });
+    } else {
+      const twoFactorToken = await generateTwoFactorToken(existingUser.email);
+      await sendTwoFactorTokenEmail(twoFactorToken.email, twoFactorToken.token);
+
+      return { twoFactor: true };
+    }
   }
 
   try {
