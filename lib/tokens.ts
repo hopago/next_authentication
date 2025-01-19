@@ -8,7 +8,7 @@ import { getTwoFactorTokenByEmail } from "@/data/auth/two-factor-token";
 
 export const generateVerificationToken = async (email: string) => {
   const token = uuidv4();
-  const expires = new Date(new Date().getTime() + 5 * 60 * 1000); // 5 min
+  const expires = new Date(new Date().getTime() + 3 * 60 * 1000); // 3 min
 
   const existingToken = await getVerificationTokenByEmail(email);
   if (existingToken) {

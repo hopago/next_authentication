@@ -16,16 +16,16 @@ const ProtectedDashboardNavbar = () => {
           variant={pathname === "/server" ? "default" : "outline"}
           asChild
         >
-          <Link href="/settings">서버</Link>
+          <Link href="/server">서버</Link>
         </Button>
         <Button
           variant={pathname === "/client" ? "default" : "outline"}
           asChild
         >
-          <Link href="/settings">클라이언트</Link>
+          <Link href="/client">클라이언트</Link>
         </Button>
         <Button variant={pathname === "/admin" ? "default" : "outline"} asChild>
-          <Link href="/settings">관리자</Link>
+          <Link href="/admin">관리자</Link>
         </Button>
         <Button
           variant={pathname === "/settings" ? "default" : "outline"}
